@@ -17,24 +17,26 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '20'
 
-      - name: Instalar Java / JDK
+      - name: Configurar Java / JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Instalar dependências
-        run: npm ci
+        run: npm install
 
       - name: Sincronizar Capacitor
         run: npx cap sync android
 
+      - name: Dar permissão de execução ao Gradle
+        run: chmod +x android/gradlew
+
       - name: Compilar APK Android
         run: |
           cd android
-          chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Disponibilizar APK para Download
