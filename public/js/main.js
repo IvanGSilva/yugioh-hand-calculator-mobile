@@ -27,16 +27,22 @@ async function recuperarSessaoDecks() {
 
 // --- Lógica de Interação ---
 window.toggleRole = async function(index, role) {
+    const scrollPos = window.scrollY;
+    
     const roles = deckAtual[index].roles || [];
     const roleIdx = roles.indexOf(role);
     roleIdx > -1 ? roles.splice(roleIdx, 1) : roles.push(role);
     
     deckAtual[index].roles = roles;
     salvarSessaoDecks();
+    
     await renderizarWorkspace(deckAtual, moverPrioridade, toggleRole);
+    window.scrollTo(0, scrollPos);
 };
 
 window.moverPrioridade = async function(cardIndex, roleIndex, direcao) {
+    const scrollPos = window.scrollY; 
+    
     const roles = deckAtual[cardIndex].roles;
     const targetIndex = roleIndex + direcao;
 
@@ -44,7 +50,9 @@ window.moverPrioridade = async function(cardIndex, roleIndex, direcao) {
         [roles[roleIndex], roles[targetIndex]] = [roles[targetIndex], roles[roleIndex]];
     }
     salvarSessaoDecks();
+    
     await renderizarWorkspace(deckAtual, moverPrioridade, toggleRole);
+    window.scrollTo(0, scrollPos);
 };
 
 // --- Inicialização ---

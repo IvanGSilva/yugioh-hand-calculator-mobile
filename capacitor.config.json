@@ -1,5 +1,9 @@
 {
-  "appId": "com.ivangsilva.ygocalculator",
-  "appName": "YGO Hand Calculator",
-  "webDir": "public"
+  "appId": "com.ygo.handcalculator",
+  "appName": "yugioh-hand-calculator-mobile",
+  "webDir": "public",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
 }
