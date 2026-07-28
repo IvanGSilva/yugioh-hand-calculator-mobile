@@ -1,0 +1,20 @@
+{
+  "short_name": "Deck Calc",
+  "name": "Calculadora de Probabilidade Yu-Gi-Oh!",
+  "icons": [
+    {
+      "src": "public/img/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "public/img/icon-192.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "background_color": "#0f0f12",
+  "theme_color": "#0f0f12",
+  "display": "standalone"
+}
