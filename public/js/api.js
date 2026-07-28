@@ -1,94 +1,49 @@
-const LOCAL_STORAGE_KEY = 'ygo_cartas_banco_v1';
-const IMAGE_CACHE_NAME = 'ygo-card-images-v1';
+const CACHE_KEY = 'cards_cache';
 
-function otimizarCartas(cartasBrutas) {
-    return cartasBrutas.map(carta => {
-        let valorEscala = carta.level ?? 0;
-        let tipoEscala = 'LV';
-        const tipoCarta = carta.frameType || "";
-
-        if (tipoCarta.includes('xyz')) {
-            tipoEscala = 'RK';
-        } else if (carta.linkval !== undefined && carta.linkval !== null) {
-            valorEscala = carta.linkval;
-            tipoEscala = 'LK';
-        }
-
-        return {
-            id: carta.id,
-            name: carta.name,
-            type: carta.type,
-            desc: carta.desc || "",
-            attribute: carta.attribute || "",
-            race: carta.race || "",
-            archetype: carta.archetype || "",
-            level: valorEscala,
-            levelType: tipoEscala,
-            image: carta.card_images?.[0]?.image_url_small || ""
-        };
-    });
+/**
+ * Retorna a URL direta da imagem da carta (renderização via tag <img> evita erros de CORS)
+ */
+export function obterUrlImagemCarta(cardId) {
+    if (!cardId) return 'https://images.ygoprodeck.com/images/cards/placeholder.jpg';
+    return `https://images.ygoprodeck.com/images/cards_small/${cardId}.jpg`;
 }
 
-export async function buscarBanco() {
-    const dadosLocais = localStorage.getItem(LOCAL_STORAGE_KEY);
+/**
+ * Busca na API do YGOProDeck APENAS os IDs que ainda não estão em cache
+ * e salva o dicionário atualizado no localStorage.
+ */
+export async function carregarCartasDoDeck(cardIds) {
+    if (!cardIds || cardIds.length === 0) return {};
+
+    // Filtra IDs válidos e remove duplicatas
+    const uniqueIds = [...new Set(cardIds.filter(Boolean))];
     
-    if (dadosLocais) {
-        console.log("Servindo cartas diretamente do LocalStorage do celular.");
-        return JSON.parse(dadosLocais);
-    }
+    // Carrega o cache salvo
+    const cacheLocal = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+    const idsFaltantes = uniqueIds.filter(id => !cacheLocal[id]);
 
-    console.log("Baixando banco de cartas pela primeira vez...");
-    return await sincronizarBanco();
-}
+    if (idsFaltantes.length > 0) {
+        try {
+            console.log(`Buscando ${idsFaltantes.length} cartas faltantes na API...`);
+            const url = `https://db.ygoprodeck.com/api/v7/cardinfo.php?id=${idsFaltantes.join(',')}`;
+            
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`Erro API YGOPRODeck (${res.status})`);
+            
+            const data = await res.json();
 
-export async function sincronizarBanco() {
-    try {
-        const resposta = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php');
-        if (!resposta.ok) throw new Error(`Erro na API externa: ${resposta.status}`);
-
-        const dados = await resposta.json();
-        if (!dados || !dados.data || !Array.isArray(dados.data)) {
-            throw new Error("Formato de dados inválido.");
+            if (data.data && Array.isArray(data.data)) {
+                data.data.forEach(card => {
+                    cacheLocal[card.id] = card;
+                });
+                
+                // Grava no localStorage com volume bem abaixo dos 5MB
+                localStorage.setItem(CACHE_KEY, JSON.stringify(cacheLocal));
+            }
+        } catch (err) {
+            console.error('Erro ao buscar cartas da API:', err);
         }
-
-        const cartasOtimizadas = otimizarCartas(dados.data);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cartasOtimizadas));
-        return cartasOtimizadas;
-    } catch (erro) {
-        console.error("Erro ao sincronizar banco de cartas:", erro);
-        throw erro;
-    }
-}
-
-export async function obterUrlImagemCarta(id) {
-    if (!id || !/^\d+$/.test(id)) {
-        return 'https://images.ygoprodeck.com/images/cards/placeholder.jpg';
     }
 
-    const remoteUrl = `https://images.ygoprodeck.com/images/cards_small/${id}.jpg`;
-
-    if (!('caches' in window)) {
-        return remoteUrl;
-    }
-
-    try {
-        const cache = await caches.open(IMAGE_CACHE_NAME);
-        const cachedResponse = await cache.match(remoteUrl);
-
-        if (cachedResponse) {
-            const blob = await cachedResponse.blob();
-            return URL.createObjectURL(blob);
-        }
-
-        const response = await fetch(remoteUrl);
-        if (response.ok) {
-            cache.put(remoteUrl, response.clone());
-            const blob = await response.blob();
-            return URL.createObjectURL(blob);
-        }
-    } catch (err) {
-        console.warn(`Fallback para imagem online da carta ${id}:`, err);
-    }
-
-    return remoteUrl;
+    return cacheLocal;
 }

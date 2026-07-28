@@ -1,4 +1,7 @@
-import { buscarBanco, sincronizarBanco, obterUrlImagemCarta } from './api.js';
+import { 
+    obterUrlImagemCarta, 
+    carregarCartasDoDeck 
+} from './api.js';
 import { processarConteudoYDK } from './ydk.js';
 import { testarMaoValida, classificarTipoMao } from './calc.js';
 import { 
@@ -9,19 +12,46 @@ import {
     obterFeedbackVisual 
 } from './ui.js';
 
-let bancoCartas = [];
 let deckAtual = [];
+
+// --- Funções Auxiliares de Interface ---
+function gerenciarExibicaoBtnSync(exibir) {
+    const btnSync = document.getElementById('btn-sync');
+    if (btnSync) {
+        btnSync.style.display = exibir ? 'inline-block' : 'none';
+    }
+}
 
 // --- Funções de Estado ---
 function salvarSessaoDecks() {
     localStorage.setItem('ygo_deck_atual_v2', JSON.stringify(deckAtual));
 }
 
+// função auxiliar para preencher os detalhes das cartas
+function enriquecerDeckComDados(cartasMapeadas) {
+    deckAtual.forEach(item => {
+        const id = item.card?.id || item.card;
+        if (cartasMapeadas[id]) {
+            item.card = cartasMapeadas[id]; 
+        }
+    });
+}
+
 async function recuperarSessaoDecks() {
     const deckSalvo = localStorage.getItem('ygo_deck_atual_v2');
     if (deckSalvo) {
         deckAtual = JSON.parse(deckSalvo);
+
+        const cardIds = deckAtual.map(item => item.card?.id || item.card).filter(Boolean);
+        if (cardIds.length > 0) {
+            const cartasMapeadas = await carregarCartasDoDeck(cardIds);
+            enriquecerDeckComDados(cartasMapeadas); // <--- Atualiza os nomes no deck
+            gerenciarExibicaoBtnSync(true);
+        }
+
         await renderizarWorkspace(deckAtual, moverPrioridade, toggleRole);
+    } else {
+        gerenciarExibicaoBtnSync(false);
     }
 }
 
@@ -57,40 +87,53 @@ window.moverPrioridade = async function(cardIndex, roleIndex, direcao) {
 
 // --- Inicialização ---
 document.addEventListener('DOMContentLoaded', async () => {
-    // Carrega o banco
+
+    gerenciarExibicaoBtnSync(false);
+    
+    const statusElem = document.getElementById('db-status');
+    if (statusElem) statusElem.classList.add('hidden');
+
     try {
-        bancoCartas = await buscarBanco();
-        document.getElementById('db-status').classList.add('hidden');
-        document.getElementById('db-loaded').textContent = t("db_loaded", { count: bancoCartas.length });
         await recuperarSessaoDecks();
     } catch (err) {
-        console.error(err);
+        console.error("Erro ao recuperar sessão:", err);
     }
 
-    // Evento de Sincronização
-    document.getElementById('btn-sync').addEventListener('click', async () => {
-        await sincronizarBanco();
-        bancoCartas = await buscarBanco();
-        await renderizarWorkspace(deckAtual, moverPrioridade, toggleRole);
-    });
+    // Evento de Sincronização Manual 
+    const btnSync = document.getElementById('btn-sync');
+    if (btnSync) {
+        btnSync.addEventListener('click', async () => {
+            const cardIds = deckAtual.map(item => item.card?.id || item.card).filter(Boolean);
+            if (cardIds.length === 0) return;
 
-    // Evento de Upload (YDK) - Corrigido: adicionado async na função do FileReader
+            await carregarCartasDoDeck(cardIds);
+            await renderizarWorkspace(deckAtual, moverPrioridade, toggleRole);
+            alert("Banco local atualizado para as cartas do deck!");
+        });
+    }
+
+    // Evento de Upload (YDK)
     document.getElementById('ydk-file').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
         
         const reader = new FileReader();
         reader.onload = async (evt) => {
-            deckAtual = processarConteudoYDK(evt.target.result, bancoCartas, deckAtual);
+
+            deckAtual = processarConteudoYDK(evt.target.result, {}, deckAtual);
+            const cardIds = deckAtual.map(item => item.card?.id || item.card).filter(Boolean);
+            const cartasMapeadas = await carregarCartasDoDeck(cardIds);
+
+            enriquecerDeckComDados(cartasMapeadas);
             salvarSessaoDecks();
+            gerenciarExibicaoBtnSync(true);
             await renderizarWorkspace(deckAtual, moverPrioridade, toggleRole);
         };
         reader.readAsText(file);
     });
 
-    // Evento de Cálculo - Corrigido: adicionado async no listener do botão
+    // Evento de Cálculo
     document.getElementById('btn-calculate').addEventListener('click', async () => {
-    
         resetarInterface();
         
         const handSize = parseInt(document.getElementById('hand-size').value);
@@ -136,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const probabilidade = (sucessos / RUNS) * 100;
 
-        // --- RENDERIZAR AS 10 MÃOS VISUAIS ---
+        // Renderiza as 10 mãos de demonstração
         const handsContainer = document.getElementById('hands-container');
         handsContainer.innerHTML = '';
 
@@ -162,16 +205,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             let cardsHTML = '';
             for (const item of maoExemplo) {
-                const imgUrl = item.card && item.card.id 
-                    ? await obterUrlImagemCarta(item.card.id) 
-                    : 'https://images.ygoprodeck.com/images/cards/placeholder.jpg';
-                    
+                const cardId = item.card?.id || item.card;
+                const imgUrl = obterUrlImagemCarta(cardId);
                 const borderClass = obterClasseBorda(item.roles);
+                const cardName = item.card?.name || `ID ${cardId}`;
 
                 cardsHTML += `
                     <div class="hand-card-item">
-                        <img src="${imgUrl}" class="${borderClass}" title="${item.card.name}" loading="lazy">
-                        <div class="hand-card-name">${item.card.name}</div>
+                        <img src="${imgUrl}" class="${borderClass}" title="${cardName}" loading="lazy">
+                        <div class="hand-card-name">${cardName}</div>
                     </div>
                 `;
             }
@@ -205,9 +247,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
 
         await atualizarPainelEstatisticas(deckAtual);
-        
         resultBox.scrollIntoView({ behavior: 'smooth' });
     });
 
-    initI18n();
+    if (typeof initI18n === 'function') {
+        initI18n();
+    }
 });

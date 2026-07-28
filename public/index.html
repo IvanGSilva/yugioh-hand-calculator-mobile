@@ -10,7 +10,9 @@
     <header>
         <h1 data-i18n="title">Yu-Gi-Oh! Probability Calculator</h1>
         <div class="db-controls">
-            <button id="btn-sync" class="btn" data-i18n="sync">Sincronizar Banco Local</button>
+            <button id="btn-sync" style="display: none;" onclick="sincronizarDeckAtual()">
+                Atualizar Banco Local
+            </button>
             <span id="db-status" data-i18n="loading_db">Carregando banco de dados...</span>
             <br>
             <span id="db-loaded"></span>
