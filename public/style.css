@@ -29,8 +29,9 @@ html, body {
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     line-height: 1.5;
-    overflow-x: hidden !important; /* Trava estrita no scroll horizontal da página */
+    overflow-x: hidden !important; /* Trava estrita no scroll horizontal da janela principal */
     width: 100%;
+    max-width: 100vw;
 }
 
 /* =========================================================
@@ -45,6 +46,7 @@ header {
     align-items: center;
     gap: 1rem;
     width: 100%;
+    max-width: 100%;
 }
 
 header h1 {
@@ -59,6 +61,7 @@ header h1 {
     margin: 1.5rem auto;
     padding: 0 1rem;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .card {
@@ -70,6 +73,7 @@ header h1 {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
     width: 100%;
     max-width: 100%;
+    box-sizing: border-box;
 }
 
 .hidden {
@@ -121,6 +125,7 @@ header h1 {
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
     width: 100%;
+    max-width: 100%;
 }
 
 .deck-list {
@@ -306,20 +311,23 @@ header h1 {
 
 /* Hands / Amostras Simuladas */
 .hands-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
     margin-top: 1rem;
-    width: 100%;
+    box-sizing: border-box !important;
 }
 
 .simulated-hand-row {
     background: #09090b;
-    padding: 0.85rem;
+    padding: 0.75rem;
     border-radius: 8px;
     border: 1px solid var(--border);
-    width: 100%;
-    overflow: hidden; /* Evita vazamento do card pai */
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important; /* Corta o excesso das cartas no card pai */
+    margin-bottom: 1rem;
 }
 
 .hand-title {
@@ -329,34 +337,56 @@ header h1 {
     font-weight: 700;
 }
 
-/* Força scroll interno suave para as 5 cartas da mão inicial */
+/* FORÇANDO SCROLL HORIZONTAL VIA GRID AUTOMÁTICO */
 .hand-cards {
-    display: flex;
-    gap: 0.5rem;
-    overflow-x: auto !important;
-    padding-bottom: 0.5rem;
-    width: 100%;
+    display: grid !important;
+    grid-auto-flow: column !important; /* Coloca cada carta em uma nova coluna na mesma linha */
+    grid-auto-columns: 52px !important; /* Tamanho fixo perfeito para mobile */
+    gap: 0.4rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important; /* Ativa a barra de rolagem horizontal */
+    overflow-y: hidden !important;
+    padding-bottom: 0.6rem !important;
     -webkit-overflow-scrolling: touch;
+    box-sizing: border-box !important;
+}
+
+/* Estilização da barrinha de scroll para o usuário saber que dá pra arrastar */
+.hand-cards::-webkit-scrollbar {
+    height: 5px !important;
+}
+
+.hand-cards::-webkit-scrollbar-track {
+    background: #18181b !important;
+    border-radius: 3px !important;
+}
+
+.hand-cards::-webkit-scrollbar-thumb {
+    background: var(--primary) !important;
+    border-radius: 3px !important;
 }
 
 .hand-card-item {
-    width: 58px;
-    min-width: 58px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-shrink: 0;
+    width: 52px !important;
+    min-width: 52px !important;
+    max-width: 52px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
 }
 
 .hand-card-item img {
-    width: 100%;
-    height: auto;
+    width: 100% !important;
+    height: auto !important;
     border-radius: 4px;
     padding: 2px;
+    display: block !important;
 }
 
 .hand-card-name {
-    font-size: 0.6rem;
+    font-size: 0.55rem !important;
     line-height: 1.1;
     text-align: center;
     margin-top: 4px;
@@ -406,6 +436,8 @@ header h1 {
     margin-top: 1rem;
     border: 1px solid var(--border);
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .stats-grid-cat {
@@ -448,14 +480,16 @@ header h1 {
     color: #fff;
 }
 
-/* Grade de 3 mini-cartas perfeita sem extrapolar */
+/* Grade de 3 mini-cartas perfeita com encaixe total na tela */
 .stats-cards-grid {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 0.6rem 0.3rem !important;
+    gap: 0.5rem 0.25rem !important;
     margin-top: 1rem !important;
     justify-items: center;
     width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .stat-card-item {
@@ -463,12 +497,13 @@ header h1 {
     flex-direction: column !important;
     align-items: center !important;
     width: 100% !important;
+    max-width: 100% !important;
 }
 
 .stat-card-item img,
 #stats-panel .stats-cards-grid img {
     width: 100% !important;
-    max-width: 60px !important;
+    max-width: 58px !important;
     height: auto !important;
     border-radius: 3px !important;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4) !important;
@@ -505,8 +540,9 @@ header h1 {
     }
 
     .container {
-        padding: 0 0.25rem;
+        padding: 0 0.5rem;
         margin: 0.5rem auto;
+        width: 100%;
     }
 
     .workspace-grid {
@@ -515,7 +551,7 @@ header h1 {
     }
 
     .card {
-        padding: 0.6rem 0.4rem;
+        padding: 0.75rem 0.5rem;
         border-radius: 8px;
     }
 
