@@ -17,7 +17,23 @@ An intuitive, lightweight, and mobile-optimized hand probability calculator and 
 
 ## Interface Preview
 
-*(Add screenshots of your mobile layout here)*
+<table border="0">
+  <tr>
+    <td width="25%">
+      <img src="img/1.jpeg" alt="Screen 1" width="100%">
+    </td>
+    <td width="25%">
+      <img src="img/2.jpeg" alt="Screen 2" width="100%">
+    </td>
+    <td width="25%">
+      <img src="img/3.jpeg" alt="Screen 3" width="100%">
+    </td>
+    <td width="25%">
+      <img src="img/4.jpeg" alt="Screen 4" width="100%">
+    </td>
+  </tr>
+</table>
+
 
 ---
 
