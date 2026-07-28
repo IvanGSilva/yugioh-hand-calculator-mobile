@@ -4,6 +4,12 @@ An intuitive, lightweight, and mobile-optimized hand probability calculator and 
 
 ---
 
+### Desktop Version
+Looking for the web/desktop version of this tool? Check out the original project repository here:
+👉 [**Yu-Gi-Oh! Hypergeometric Hand Calculator (Desktop)**](https://github.com/IvanGSilva/yugioh_hypergeometric_hand_calculator)
+
+---
+
 ## Features
 
 * **Hypergeometric Probability Engine:** Accurately calculate the exact mathematical odds of drawing your key card combinations in your opening hand.
