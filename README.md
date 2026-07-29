@@ -55,6 +55,40 @@ You can install the app directly on your Android device using the standalone APK
 
 ---
 
+## How to use this app
+
+**1. Get Your `.ydk` Deck File**
+The app uses standard `.ydk` files (the universal deck format used by simulator software). You can get or create one in a few ways:
+* **Export from Simulators:** Build or open a deck in **EDOPro**, **YGOPro**, or **Project Ignis**, and export/save it as a `.ydk` file.
+* **Download Online:**
+  * **[YGOProDeck](https://ygoprodeck.com/):** Browse top tournament decks, click on any deck list, and select **"Download YDK File"**.
+  * **[YGOScope](https://ygoscope.com/):** Export match-tested competitive lists directly into `.ydk`.
+* **Export from Yu-Gi-Oh! Neuron:** Share/export your deck layout into `.ydk` format.
+
+
+**2. Import Your Deck**
+1. Open the **Yu-Gi-Oh! Hand Calculator** app on your phone.
+2. Tap the **"Load .YDK File"** button at the top of the workspace.
+3. Select the `.ydk` file from your device's file storage. The app will automatically parse the file and list all Main Deck cards along with their artwork.
+
+
+**3. Categorize Your Cards**
+To get accurate statistical analysis, assign roles to your cards by tapping the tags on each card entry:
+* **🟢 Starter:** Key cards that initiate your main plays/combos single-handedly (e.g., *Tour Guide*, *Branded Fusion*, *Aluber*).
+* **🔵 Extender:** Cards that extend your plays or provide follow-up when you already have a play going.
+* **🟣 Non-Engine:** Staples, handtraps, and board breakers (e.g., *Ash Blossom*, *Infinite Impermanence*, *Nibiru*).
+* **🔴 Brick:** Cards you prefer NOT to draw in your opening hand (e.g., *Garnets*, specific soft-brick search targets).
+
+> *Note: Cards can have multiple tags assigned depending on your engine logic!*
+
+
+**4. Run Probability & Hand Simulations**
+* **Probability Engine:** Adjust your desired sample size (5 cards for 1st turn, 6 cards for 2nd turn) and set target drawing conditions to see your exact mathematical odds of opening specific combinations.
+* **Monte Carlo Simulator:** Tap **"Simulate Opening Hands"** to generate realistic 5 or 6-card test hands. Swipe horizontally on any hand row to view your full drawn hand!
+* **Density Breakdown:** Check the visual stats panel at the bottom to evaluate your deck's overall balance and adjust card ratios before your next duel.
+
+---
+
 ## Tech Stack & Built With
 
 * **Frontend:** HTML5, Custom CSS3 (Flexbox & CSS Grid), Pure JavaScript (ES6+)
